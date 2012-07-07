@@ -1,0 +1,157 @@
+\documentclass[slidetop, 10pt]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{default}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{lmodern}
+\usepackage[frenchb]{babel}
+\usetheme{Antibes}
+
+\usecolortheme{beaver}
+\title{Séminaire d'introduction à R}
+\subtitle{séance 5 - Analyse géométrique des données}
+\author{Joël Gombin}
+\institute{CURAPP - UPJV}
+\date{30 mars 2012}
+\usepackage{graphicx}
+\usepackage[fixlanguage]{babelbib}
+\selectbiblanguage{french}
+\setbeamertemplate{navigation symbols}{}
+\usepackage{listings}
+
+\usepackage{color}
+\usepackage{alltt}
+\usepackage{hyperref}
+
+\ifdefined\knitrout
+  \renewenvironment{knitrout}{\begin{tiny}}{\end{tiny}}
+\else
+\fi
+
+\SweaveOpts{size="tiny"}
+
+\AtBeginSection[] 
+{ 
+  \begin{frame}[plain]{Plan} 
+    \tableofcontents[currentsection, hideothersubsections] 
+  \end{frame} 
+} 
+
+
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Introduction : l'analyse géométrique des données}
+
+\begin{frame}
+\frametitle{Introduction : l'analyse géométrique des données}
+
+L'analyse géométrique des données (AGD) correspond à une famille de méthodes d'analyse des données, développées par des mathématiciens français (Jean-Paul Benzécri).
+
+Comme beaucoup de méthodes statistiques, l'AGD a au départ partie liée avec la psychologie et la psychométrie, mais se développe rapidement en sociologie (chez Bourdieu notamment).
+
+L'idée consiste à dégager, d'un tableau de données défini par un certain nombre de variables (colonnes) et d'individus (lignes), les structures sous-jacentes à ces données. Pour cela, on procède à partir de l'idée de distance entre deux points, dans un univers à $n$ dimensions ($n$ étant le nombre de variables considérées). Le statut des variables est symétrique : pas de notion de causalité.
+
+On distingue deux grands types de méthodes, selon que les variables soient continues (analyse en composantes principales, ACP) ou discrètes (analyse des correspondances multiples, ACM). 
+\end{frame}
+
+\section{L'analyse en composantes principales}
+
+\begin{frame}
+\frametitle{Commencer avec l'ACP}
+On utilisera, tout au long de cette séance, le package \verb!FactoMineR! (\url{http://factominer.free.fr}). 
+
+\begin{block}{A noter}
+Il existe une interface graphique pour utiliser \verb!FactoMineR!. Il faut installer le package \verb!Rcmdr! (voir procédure sur le site de \verb!FactoMineR!).
+\end{block}
+
+<<initialisation>>=
+library(FactoMineR)
+load("/media/HDD/Dropbox/Thèse/séminaire R/séance 1/mini_picardie.Rdata")
+data <- mini_picardie[, c(81,85,seq(90,112,2), 114,115,116,118, 21)]
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Mettre en place l'ACP}
+
+<<ACP>>=
+acp1 <- PCA(data, quali.sup=19, graph=F, ind.sup=1699)
+@
+
+On peut alors dessiner le cercle des corrélations :
+
+<<ACPgraph1, eval=F>>=
+plot.PCA(acp1, choix="var")
+@
+\end{frame}
+\begin{frame}
+\frametitle{Mettre en place l'ACP}
+
+<<ACPgraph2, dev=pdf, out.width=\linewidth, fig.width=10, fig.height=7, echo=F>>=
+plot.PCA(acp1, choix="var")
+@
+\end{frame}
+\begin{frame}
+\frametitle{Mettre en place l'ACP}
+
+<<ACPgraph3, dev=pdf, out.width=0.9\linewidth, fig.width=10, fig.height=7>>=
+plot.PCA(acp1, choix="var", axes=c(1,3))
+@
+\end{frame}
+\begin{frame}
+\frametitle{Mettre en place l'ACP}
+On peut aussi dessiner le graphe des individus :
+<<ACPgraph4, dev=pdf, out.width=0.7\linewidth, fig.width=10, fig.height=7>>=
+concat <- cbind.data.frame(data[-1699,19], acp1$ind$coord)
+ellipse.coord <- coord.ellipse(concat, bary=T)
+plot.PCA(acp1, choix="ind",  habillage=19, invisible=c("ind", "ind.sup"), ellipse=ellipse.coord)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Avoir des résumés numériques}
+<<resumes>>=
+dimdesc(acp1, axes=1)
+@
+\end{frame}
+
+\section{L'analyse des correspondances multiples}
+
+\begin{frame}
+\frametitle{Initier l'ACM}
+
+<<chargementACM, dev=pdf, out.width=0.8\textwidth, fig.width=10, fig.height=7>>=
+load("/media/HDD/Dropbox/Thèse/séminaire R/séance 4/BPFv3.Rdata")
+data2 <- BPFv3[,c("RCRS2", "RCRS7", "RRS15", "RC40")]
+acm1 <- MCA(data2, quali.sup=4, graph=F, ind.sup=1699)
+plot(acm1, choix="ind", invisible=c("ind", "ind.sup", "quali.sup"), habillage="quali")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Avec la variable illustrative}
+
+<<ACM, dev=pdf, out.width=0.8\textwidth, fig.width=10, fig.height=7>>=
+plot(acm1, choix="ind", invisible=c("ind", "ind.sup", "var"), habillage="quali")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Description des dimensions}
+
+<<descACM>>=
+dimdesc(acm1, axes=1)
+@
+
+\end{frame}
+
+\begin{frame}
+\frametitle{}
+Et maintenant... Exerçons-nous !
+\end{frame}
+
+\end{document}
